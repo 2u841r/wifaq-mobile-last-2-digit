@@ -1,0 +1,66 @@
+name: Build EXE and Publish Release
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**.ps1'
+      - '.github/workflows/build-exe.yml'
+  workflow_dispatch:        # lets you run it manually from the Actions tab
+
+permissions:
+  contents: write           # required to create releases
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install ps2exe module
+        shell: powershell
+        run: |
+          Install-Module -Name ps2exe -Force -Scope CurrentUser -AllowClobber
+          Write-Host "ps2exe installed."
+
+      - name: Compile PS1 to EXE
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+          # Change this if your script has a different name/path
+          $inputFile  = "check_mobile.ps1"
+          $outputFile = "check_mobile.exe"
+
+          if (-not (Test-Path $inputFile)) {
+              Write-Error "Could not find $inputFile in the repo root."
+          }
+
+          Invoke-ps2exe `
+              -InputFile  $inputFile `
+              -OutputFile $outputFile `
+              -NoConsole:$false `
+              -Title      "Madrasha Result Finder" `
+              -Description "Madrasha Result Finder" `
+              -Version    "1.0.0"
+
+          Write-Host "Built $outputFile"
+
+      - name: Upload EXE as build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: check_mobile-exe
+          path: check_mobile.exe
+
+      - name: Create Release and upload EXE
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Madrasha Result Finder v1.0.${{ github.run_number }}
+          body: |
+            Automated build of check_mobile.exe
+            Built from commit ${{ github.sha }}
+          files: check_mobile.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
