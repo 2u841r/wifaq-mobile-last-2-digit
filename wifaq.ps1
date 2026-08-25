@@ -103,11 +103,8 @@ for ($i = 0; $i -le 99; $i++) {
             Write-Host ""
             Write-Host "=====================================" -ForegroundColor Green
             Write-Host "  SUCCESS!" -ForegroundColor Green
-            Write-Host "  Full Mobile: $mobile" -ForegroundColor Green
+            Write-Host "  Correct last 2 digits: $suffix" -ForegroundColor Green
             Write-Host "=====================================" -ForegroundColor Green
-            Write-Host ""
-            Write-Host "Response:" -ForegroundColor Cyan
-            $response | ConvertTo-Json -Depth 10
 
             $found = $true
             break
