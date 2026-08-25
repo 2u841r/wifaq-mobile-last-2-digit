@@ -1,0 +1,62 @@
+name: Build EXE from PS1
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**.ps1'
+      - '.github/workflows/build-exe.yml'
+  workflow_dispatch:        # lets you run it manually from the Actions tab
+  release:
+    types: [ created ]      # also build when a release is created
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install ps2exe module
+        shell: powershell
+        run: |
+          Install-Module -Name ps2exe -Force -Scope CurrentUser -AllowClobber
+          Write-Host "ps2exe installed."
+
+      - name: Compile PS1 to EXE
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+          # Change this if your script has a different name/path
+          $input  = "check_mobile.ps1"
+          $output = "check_mobile.exe"
+
+          if (-not (Test-Path $input)) {
+              Write-Error "Could not find $input in the repo root."
+          }
+
+          Invoke-ps2exe `
+              -InputFile  $input `
+              -OutputFile $output `
+              -NoConsole:$false `
+              -Title      "Madrasha Result Finder" `
+              -Description "Madrasha Result Finder" `
+              -Version    "1.0.0"
+
+          Write-Host "Built $output"
+
+      - name: Upload EXE as build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: check_mobile-exe
+          path: check_mobile.exe
+
+      # Optional: attach the EXE to a GitHub Release when one is created
+      - name: Attach EXE to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: check_mobile.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
