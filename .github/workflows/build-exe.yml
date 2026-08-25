@@ -30,8 +30,8 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           # Change this if your script has a different name/path
-          $inputFile  = "check_mobile.ps1"
-          $outputFile = "check_mobile.exe"
+          $inputFile  = "wifaq.ps1"
+          $outputFile = "wifaq.exe"
 
           if (-not (Test-Path $inputFile)) {
               Write-Error "Could not find $inputFile in the repo root."
@@ -50,8 +50,8 @@ jobs:
       - name: Upload EXE as build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: check_mobile-exe
-          path: check_mobile.exe
+          name: wifaq-exe
+          path: wifaq.exe
 
       - name: Create Release and upload EXE
         uses: softprops/action-gh-release@v2
@@ -59,8 +59,8 @@ jobs:
           tag_name: v1.0.${{ github.run_number }}
           name: Madrasha Result Finder v1.0.${{ github.run_number }}
           body: |
-            Automated build of check_mobile.exe
+            Automated build of wifaq.exe
             Built from commit ${{ github.sha }}
-          files: check_mobile.exe
+          files: wifaq.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
